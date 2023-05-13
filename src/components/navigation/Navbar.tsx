@@ -24,6 +24,7 @@ const Navbar: React.FC<{ session: User; loading: boolean }> = ({ session, loadin
   const router = useRouter()
 
   const logout = trpc.user.logout.useMutation()
+  const userQueriesUtils = trpc.useContext()
 
   return (
     <Disclosure as="nav" className="bg-white border-b border-gray-200">
@@ -101,6 +102,7 @@ const Navbar: React.FC<{ session: User; loading: boolean }> = ({ session, loadin
                               onClick={async () => {
                                 try {
                                   const result = await logout.mutateAsync()
+                                  userQueriesUtils.user.user.invalidate()
 
                                   toast.info(result.message)
 
@@ -186,6 +188,7 @@ const Navbar: React.FC<{ session: User; loading: boolean }> = ({ session, loadin
                       onClick={async () => {
                         try {
                           const result = await logout.mutateAsync()
+                          userQueriesUtils.user.user.invalidate()
 
                           toast.info(result.message)
 

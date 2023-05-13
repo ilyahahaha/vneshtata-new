@@ -4,7 +4,7 @@ import { loginSchema, registerSchema } from '@/common/schemas/user'
 import { EmptySession, User } from '@/common/session'
 import { publicProcedure, router } from '@/server/trpc'
 import { TRPCError } from '@trpc/server'
-import { PrismaClientKnownRequestError } from '@prisma/client/runtime'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
 
 export const userRouter = router({
   user: publicProcedure.query(async ({ ctx }) => {
@@ -24,7 +24,7 @@ export const userRouter = router({
 
     if (!user) throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Неверный email или пароль' })
 
-    if (await argon2.verify(user.hashedPassword, password))
+    if (!(await argon2.verify(user.hashedPassword, password)))
       throw new TRPCError({ code: 'UNAUTHORIZED', message: 'Неверный email или пароль' })
 
     const session: User = {
