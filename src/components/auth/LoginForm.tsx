@@ -26,7 +26,7 @@ const LoginForm: React.FC = () => {
         try {
           const result = await useLogin.mutateAsync({ ...values })
 
-          userQueriesUtils.user.user.invalidate()
+          userQueriesUtils.user.session.invalidate()
 
           toast.info(result?.message)
         } catch (error) {

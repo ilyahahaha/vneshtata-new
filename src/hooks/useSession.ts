@@ -3,7 +3,7 @@ import Router from 'next/router'
 import { trpc } from '@/common/trpc'
 
 const useSession = ({ redirectTo = '', redirectIfFound = false } = {}) => {
-  const { data: session, isLoading, isError } = trpc.user.user.useQuery()
+  const { data: session, isLoading, isError } = trpc.user.session.useQuery()
 
   useEffect(() => {
     if (!redirectTo || !session) return

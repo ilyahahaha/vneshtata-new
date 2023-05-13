@@ -1,13 +1,22 @@
 import * as argon2 from 'argon2'
 import prisma from '@/common/prisma'
-import { loginSchema, registerSchema } from '@/common/schemas/user'
+import {
+  createEmployement,
+  deleteEmployement,
+  loginSchema,
+  registerSchema,
+  updateProfileSchema,
+  updateUserSchema,
+  userIdSchema,
+} from '@/common/schemas/user'
 import { EmptySession, User } from '@/common/session'
-import { publicProcedure, router } from '@/server/trpc'
+import { protectedProcedure, publicProcedure, router } from '@/server/trpc'
 import { TRPCError } from '@trpc/server'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { Companies } from '@prisma/client'
 
 export const userRouter = router({
-  user: publicProcedure.query(async ({ ctx }) => {
+  session: publicProcedure.query(async ({ ctx }) => {
     if (ctx.session.user) {
       return {
         ...ctx.session.user,
@@ -101,4 +110,212 @@ export const userRouter = router({
       result: { EmptySession },
     }
   }),
+  getUser: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
+    const { userId } = input
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        picture: true,
+        profile: {
+          select: {
+            status: true,
+            position: true,
+            company: true,
+            country: true,
+            education: true,
+            about: true,
+          },
+        },
+        previousEmployments: {
+          select: {
+            company: true,
+            position: true,
+            employedOn: true,
+          },
+        },
+        followedBy: {
+          select: {
+            follower: {
+              select: {
+                id: true,
+                firstName: true,
+                picture: true,
+              },
+            },
+          },
+        },
+      },
+    })
+
+    if (!user) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Пользователь с указаным ID не найден' })
+    }
+
+    return { status: 200, message: 'Данные о пользователе получены', result: { user } }
+  }),
+  getBusiedIds: protectedProcedure.query(async () => {
+    const ids = await prisma.user.findMany({ select: { id: true } })
+
+    if (!ids) {
+      throw new TRPCError({ code: 'NOT_FOUND', message: 'Пользователи не найдены' })
+    }
+
+    return { status: 200, message: 'Данные о пользователях получены', result: { ids } }
+  }),
+  updateUser: protectedProcedure.input(updateUserSchema).mutation(async ({ ctx, input }) => {
+    const { userId, newUserId, firstName, lastName, email, password } = input
+
+    if (ctx.session.user?.id !== userId) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Вы не можете изменить другого пользователя',
+      })
+    }
+
+    const user = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        id: newUserId,
+        firstName: firstName,
+        lastName: lastName,
+        email: email,
+        hashedPassword: password ? await argon2.hash(password) : undefined,
+      },
+    })
+
+    if (!user) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Пользователь не найден',
+      })
+    }
+
+    const userSession: User = {
+      id: newUserId ? newUserId : ctx.session.user.id,
+      email: email ? email : ctx.session.user.email,
+      firstName: firstName ? firstName : ctx.session.user.firstName,
+      lastName: lastName ? lastName : ctx.session.user.firstName,
+      picture: ctx.session.user.picture,
+      isLoggedIn: true,
+    }
+
+    ctx.session.user = userSession
+    await ctx.session.save()
+
+    return { status: 201, message: 'Пользователь обновлен', result: { userSession } }
+  }),
+  updateProfile: protectedProcedure.input(updateProfileSchema).mutation(async ({ ctx, input }) => {
+    const { userId, status, position, company, country, education, about } = input
+
+    if (ctx.session.user?.id !== userId) {
+      throw new TRPCError({
+        code: 'UNAUTHORIZED',
+        message: 'Вы не можете изменить другого пользователя',
+      })
+    }
+
+    const profile = await prisma.user.update({
+      where: {
+        id: userId,
+      },
+      data: {
+        profile: {
+          update: {
+            status: status,
+            position: position,
+            company: company,
+            country: country,
+            education: education,
+            about: about,
+          },
+        },
+      },
+      select: {
+        profile: {
+          select: {
+            status: true,
+            position: true,
+            company: true,
+            country: true,
+            education: true,
+            about: true,
+          },
+        },
+      },
+    })
+
+    if (!profile) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Пользователь не найден',
+      })
+    }
+
+    return { status: 201, message: 'Профиль обновлен', result: { profile } }
+  }),
+  createEmployement: protectedProcedure
+    .input(createEmployement)
+    .mutation(async ({ ctx, input }) => {
+      const { userId, company, position, employedOn } = input
+
+      if (ctx.session.user?.id !== userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Вы не можете изменить другого пользователя',
+        })
+      }
+
+      if (!(company in Companies))
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Неверные параметры запроса',
+        })
+
+      const employement = await prisma.employment.create({
+        data: {
+          company: company as Companies,
+          position: position,
+          employedOn: employedOn,
+          employeeUserId: userId,
+        },
+      })
+
+      if (!employement)
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Ошибка на стороне клиента',
+        })
+
+      return { status: 201, message: 'Опыт работы обновлен', result: { employement } }
+    }),
+  deleteEmployement: protectedProcedure
+    .input(deleteEmployement)
+    .mutation(async ({ ctx, input }) => {
+      const { userId, employementId } = input
+
+      if (ctx.session.user?.id !== userId) {
+        throw new TRPCError({
+          code: 'UNAUTHORIZED',
+          message: 'Вы не можете изменить другого пользователя',
+        })
+      }
+
+      const employement = await prisma.employment.delete({
+        where: {
+          id: employementId,
+        },
+      })
+
+      if (!employement)
+        throw new TRPCError({
+          code: 'BAD_REQUEST',
+          message: 'Должности не существует',
+        })
+
+      return { status: 201, message: 'Должность удалена', result: {} }
+    }),
 })

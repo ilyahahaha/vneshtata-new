@@ -7,16 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Companies {
+  Yandex
+  VK
+  AlfaBank
+  Tinkoff
+  Sber
+  MTS
+  Rostelecom
+}
+
 model User {
-  id             String   @id @unique @default(uuid())
-  profileId      String   @unique
-  firstName      String
-  lastName       String
-  email          String   @unique
-  profile        Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
-  hashedPassword String
-  picture        String?
-  createdAt      DateTime @default(now())
+  id                  String       @id @unique @default(uuid())
+  profileId           String       @unique
+  firstName           String
+  lastName            String
+  email               String       @unique
+  profile             Profile      @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  previousEmployments Employment[]
+  followedBy          Follows[]    @relation("following")
+  following           Follows[]    @relation("follower")
+  hashedPassword      String
+  picture             String?
+  createdAt           DateTime     @default(now())
 }
 
 model Profile {
@@ -29,4 +42,22 @@ model Profile {
   country   String  @default("Не выбрано")
   education String?
   about     String?
+}
+
+model Employment {
+  id             String    @id @default(cuid())
+  employee       User?     @relation(fields: [employeeUserId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  employeeUserId String?
+  company        Companies
+  position       String
+  employedOn     DateTime
+}
+
+model Follows {
+  follower    User   @relation("follower", fields: [followerId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  followerId  String
+  following   User   @relation("following", fields: [followingId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  followingId String
+
+  @@id([followerId, followingId])
 }

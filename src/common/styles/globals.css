@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --toastify-color-info: theme('colors.primary');
+  --toastify-color-success: #07bc0c;
+  --toastify-color-warning: #f1c40f;
+  --toastify-color-error: theme('colors.red.500');
+}
+
+.btn {
+  @apply rounded-md border-transparent normal-case;
+}
+
+.btn-primary {
+  @apply text-white bg-primary;
+}
+
+.btn-primary:focus {
+  @apply outline-none ring-2 ring-offset-2 ring-primary;
+}
+
+.btn-primary:hover {
+  @apply bg-secondary border-transparent;
+}
+
+.btn-primary:disabled {
+  @apply bg-secondary text-white;
+}
+
+.btn-outlined {
+  @apply text-gray-700 font-normal bg-white border border-dashed border-gray-300 shadow-sm;
+}
+
+.btn-outlined:hover {
+  @apply border-solid border-gray-300 shadow-sm bg-white;
+}
+
+.tooltip-error {
+  --tooltip-color: theme('colors.red.500');
+  --tooltip-text-color: #fff;
+}
+
+.Toastify__toast-body {
+  @apply text-black text-sm;
+}
+
+.chat-bubble {
+  @apply bg-primary;
+}
+
+.input:focus {
+  @apply outline-none border-none;
+}
+
+.input:active {
+  @apply outline-none border-none;
+}

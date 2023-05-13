@@ -102,7 +102,7 @@ const Navbar: React.FC<{ session: User; loading: boolean }> = ({ session, loadin
                               onClick={async () => {
                                 try {
                                   const result = await logout.mutateAsync()
-                                  userQueriesUtils.user.user.invalidate()
+                                  userQueriesUtils.user.session.invalidate()
 
                                   toast.info(result.message)
 
@@ -188,7 +188,7 @@ const Navbar: React.FC<{ session: User; loading: boolean }> = ({ session, loadin
                       onClick={async () => {
                         try {
                           const result = await logout.mutateAsync()
-                          userQueriesUtils.user.user.invalidate()
+                          userQueriesUtils.user.session.invalidate()
 
                           toast.info(result.message)
 

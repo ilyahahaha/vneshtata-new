@@ -28,7 +28,7 @@ const RegisterForm: React.FC = () => {
         try {
           const result = await useRegister.mutateAsync({ ...values })
 
-          userQueriesUtils.user.user.invalidate()
+          userQueriesUtils.user.session.invalidate()
 
           toast.info(result?.message)
         } catch (error) {
