@@ -1,4 +1,3 @@
-import { trpc } from '@/common/trpc'
 import type { NextPage } from 'next'
 
 const Index: NextPage = () => {

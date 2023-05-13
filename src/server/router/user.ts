@@ -47,7 +47,7 @@ export const userRouter = router({
   }),
   register: publicProcedure.input(registerSchema).mutation(async ({ input, ctx }) => {
     try {
-      const { firstName, lastName, email, password } = await registerSchema.parseAsync(body)
+      const { firstName, lastName, email, password } = input
 
       const user = await prisma.user.create({
         data: {

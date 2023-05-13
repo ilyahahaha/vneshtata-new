@@ -5,16 +5,12 @@ import 'react-toastify/dist/ReactToastify.css'
 
 import Navbar from '@/components/navigation/Navbar'
 import Footer from '@/components/navigation/Footer'
-import { trpc } from '@/common/trpc'
-import { useRouter } from 'next/router'
 import Head from 'next/head'
 import type { User } from '@/common/session'
+import useSession from '@/hooks/useSession'
 
 const Layout = ({ children }: PropsWithChildren) => {
-  const router = useRouter()
-  const { data: session, isLoading, isError } = trpc.user.user.useQuery()
-
-  if (isError) return router.push('/404')
+  const { session, isLoading } = useSession()
 
   return (
     <>
