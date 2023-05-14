@@ -1,4 +1,5 @@
 import { trpc } from '@/common/trpc'
+import Loading from '@/components/Loading'
 import EmploymentForm from '@/components/user/settings/EmployementForm'
 import ProfileForm from '@/components/user/settings/ProfileForm'
 import Sidebar from '@/components/user/settings/Sidebar'
@@ -20,7 +21,7 @@ const UserSettings: NextPage = () => {
   const { data: busiedUserIdsData } = trpc.user.getBusiedIds.useQuery()
 
   if (isLoading) {
-    return <h1>Загрузка</h1>
+    return <Loading />
   }
 
   const profile = userData?.result.user.profile
@@ -28,7 +29,7 @@ const UserSettings: NextPage = () => {
   const busiedUserIds = busiedUserIdsData?.result.ids
 
   if (!profile || !previousEmployments || !busiedUserIds) {
-    return <h1>Ошибка</h1>
+    return <Loading />
   }
 
   return (

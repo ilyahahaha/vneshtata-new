@@ -1,5 +1,6 @@
 import type { User } from '@/common/session'
 import { trpc } from '@/common/trpc'
+import Loading from '@/components/Loading'
 import Followers from '@/components/user/Followers'
 import Info from '@/components/user/Info'
 import Profile from '@/components/user/Profile'
@@ -20,7 +21,7 @@ const UserProfile: NextPage = () => {
   } = trpc.user.getUser.useQuery({ userId: router.query.userId as string })
 
   if (isUserLoading || isSessionLoading) {
-    return <h1>Загрузка</h1>
+    return <Loading />
   }
 
   if (!userData || isError) {

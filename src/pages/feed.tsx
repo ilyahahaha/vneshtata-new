@@ -1,4 +1,5 @@
 import type { User } from '@/common/session'
+import Loading from '@/components/Loading'
 import InfiniteFeed from '@/components/feed/InfiniteFeed'
 import PostForm from '@/components/feed/PostForm'
 import useSession from '@/hooks/useSession'
@@ -8,7 +9,7 @@ const Feed: NextPage = () => {
   const { session, isLoading: isSessionLoading } = useSession()
 
   if (isSessionLoading) {
-    return <h1>Загрузка</h1>
+    return <Loading />
   }
 
   return (

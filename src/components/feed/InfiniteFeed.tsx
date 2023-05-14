@@ -1,8 +1,7 @@
 import type { User } from '@/common/session'
 import { trpc } from '@/common/trpc'
-import { Fragment, useState } from 'react'
-import InfiniteScroll from 'react-infinite-scroll-component'
 import PostComponent from './post/Post'
+import Loading from '../Loading'
 
 export type PostType = {
   id: string
@@ -29,7 +28,7 @@ const InfiniteFeed: React.FC<{ user: User }> = ({ user }) => {
   const postsData = postsQuery?.result.posts
 
   if (isLoading || !postsData) {
-    return <h1>Загрузка</h1>
+    return <Loading />
   }
 
   if (postsData.length == 0) {

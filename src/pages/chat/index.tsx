@@ -1,4 +1,5 @@
 import { trpc } from '@/common/trpc'
+import Loading from '@/components/Loading'
 import DialogList from '@/components/chat/DialogList'
 import useSession from '@/hooks/useSession'
 import { NextPage } from 'next'
@@ -8,7 +9,7 @@ const ChatDialogs: NextPage = () => {
   const { data: dialogData, isLoading: isDialogsLoading, isError } = trpc.chat.getDialogs.useQuery()
 
   if (isDialogsLoading || isSessionLoading) {
-    return <h1>Загрузка</h1>
+    return <Loading />
   }
 
   if (!dialogData || !session || isError) {

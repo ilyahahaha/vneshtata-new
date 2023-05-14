@@ -9,6 +9,7 @@ import { HiExclamationCircle, HiPlus } from 'react-icons/hi'
 import { toast } from 'react-toastify'
 import Map from '@/components/user/employements/Map'
 import { TRPCClientError } from '@trpc/client'
+import DatePickerField from './DatePickerField'
 
 const EmploymentForm: React.FC<{
   session: User
@@ -38,7 +39,7 @@ const EmploymentForm: React.FC<{
           initialValues={{
             employeeCompany: 'AlfaBank',
             employeePosition: '',
-            employedOn: new Date(),
+            employedOn: '',
           }}
           onSubmit={async (values, { setSubmitting }) => {
             try {
@@ -138,7 +139,7 @@ const EmploymentForm: React.FC<{
                     </div>
                   ) : null}
                 </div>
-                {/* <div className="col-span-1 relative">
+                <div className="col-span-1 relative">
                   <label htmlFor="employedOn" className="block text-sm font-medium text-gray-700">
                     Дата
                   </label>
@@ -165,7 +166,7 @@ const EmploymentForm: React.FC<{
                       </div>
                     </div>
                   ) : null}
-                </div> */}
+                </div>
               </div>
               <div className="relative pt-4">
                 <button
