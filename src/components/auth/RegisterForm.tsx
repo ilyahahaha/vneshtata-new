@@ -228,11 +228,7 @@ const RegisterForm: React.FC = () => {
               disabled
             />
             <label htmlFor="agreement" className="ml-2 block text-sm text-gray-900">
-              Я принимаю условия{' '}
-              <a className="text-primary" target="_blank" href="#">
-                Пользовательского соглашения
-              </a>
-              .
+              Я принимаю условия Пользовательского соглашения.
             </label>
           </div>
 
