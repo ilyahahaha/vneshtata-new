@@ -46,7 +46,7 @@ const EmploymentForm: React.FC<{
               const result = await useCreateEmployements.mutateAsync({
                 company: values.employeeCompany,
                 position: values.employeePosition,
-                employedOn: values.employedOn.toISOString(),
+                employedOn: values.employedOn,
               })
 
               toast.info(result?.message)
