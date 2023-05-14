@@ -8,8 +8,8 @@ const Avatar: React.FC<{ picture: string | null; size: number; classNames?: stri
   classNames,
 }) => {
   return (
-    <div className="avatar placeholder">
-      <div className={clsx(classNames ?? '', `h-${size} w-${size} rounded-full bg-gray-400`)}>
+    <div className={clsx(classNames ?? '', 'avatar placeholder')}>
+      <div className={`h-${size} w-${size} rounded-full bg-gray-400`}>
         {picture ? (
           <Image className="rounded-full" src={picture} width={64} height={64} alt="Аватарка" />
         ) : (

@@ -167,7 +167,9 @@ export const userRouter = router({
     return { status: 200, message: 'Данные о пользователях получены', result: { ids } }
   }),
   updateUser: protectedProcedure.input(updateUserSchema).mutation(async ({ ctx, input }) => {
-    const { userId, newUserId, firstName, lastName, email, password } = input
+    const userId = ctx.session.user?.id as string
+
+    const { newUserId, firstName, lastName, email, password } = input
 
     if (ctx.session.user?.id !== userId) {
       throw new TRPCError({
@@ -209,7 +211,9 @@ export const userRouter = router({
     return { status: 201, message: 'Пользователь обновлен', result: { userSession } }
   }),
   updateProfile: protectedProcedure.input(updateProfileSchema).mutation(async ({ ctx, input }) => {
-    const { userId, status, position, company, country, education, about } = input
+    const userId = ctx.session.user?.id as string
+
+    const { status, position, company, country, education, about } = input
 
     if (ctx.session.user?.id !== userId) {
       throw new TRPCError({
@@ -260,7 +264,9 @@ export const userRouter = router({
   createEmployement: protectedProcedure
     .input(createEmployement)
     .mutation(async ({ ctx, input }) => {
-      const { userId, company, position, employedOn } = input
+      const userId = ctx.session.user?.id as string
+
+      const { company, position, employedOn } = input
 
       if (ctx.session.user?.id !== userId) {
         throw new TRPCError({
@@ -295,7 +301,9 @@ export const userRouter = router({
   deleteEmployement: protectedProcedure
     .input(deleteEmployement)
     .mutation(async ({ ctx, input }) => {
-      const { userId, employementId } = input
+      const userId = ctx.session.user?.id as string
+
+      const { employementId } = input
 
       if (ctx.session.user?.id !== userId) {
         throw new TRPCError({

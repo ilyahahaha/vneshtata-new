@@ -18,7 +18,7 @@ export const userIdSchema = z.object({
   userId: z.string().nonempty({ message: 'Введите ID пользователя' }).trim(),
 })
 
-export const updateUserSchema = userIdSchema.extend({
+export const updateUserSchema = z.object({
   newUserId: z.string().nonempty({ message: 'Введите ID пользователя' }).trim(),
   firstName: z.string().trim().optional(),
   lastName: z.string().trim().optional(),
@@ -26,7 +26,7 @@ export const updateUserSchema = userIdSchema.extend({
   password: z.string().trim().optional(),
 })
 
-export const updateProfileSchema = userIdSchema.extend({
+export const updateProfileSchema = z.object({
   status: z.string().trim().optional(),
   position: z.string().trim().optional(),
   company: z.string().trim().optional(),
@@ -35,13 +35,13 @@ export const updateProfileSchema = userIdSchema.extend({
   about: z.string().trim().optional(),
 })
 
-export const createEmployement = userIdSchema.extend({
+export const createEmployement = z.object({
   company: z.string().nonempty({ message: 'Введите компанию' }).trim(),
   position: z.string().nonempty({ message: 'Введите должность' }).trim(),
   employedOn: z.string().nonempty({ message: 'Введите дату' }).trim(),
 })
 
-export const deleteEmployement = userIdSchema.extend({
+export const deleteEmployement = z.object({
   employementId: z.string().nonempty({ message: 'Введите ID' }).trim(),
 })
 

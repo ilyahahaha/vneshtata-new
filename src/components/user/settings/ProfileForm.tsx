@@ -6,6 +6,7 @@ import { trpc } from '@/common/trpc'
 import clsx from 'clsx'
 import { HiExclamationCircle } from 'react-icons/hi'
 import type { User } from '@/common/session'
+import { TRPCClientError } from '@trpc/client'
 
 const ProfileForm: React.FC<{
   session: User
@@ -36,11 +37,11 @@ const ProfileForm: React.FC<{
       }}
       onSubmit={async (values, { setSubmitting }) => {
         try {
-          const result = await useProfileUpdate.mutateAsync({ userId: session.id, ...values })
+          const result = await useProfileUpdate.mutateAsync({ ...values })
 
           toast.info(result?.message)
         } catch (error) {
-          if (error instanceof Error) {
+          if (error instanceof TRPCClientError) {
             setSubmitting(false)
             return toast.error(error.message)
           }

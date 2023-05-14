@@ -7,6 +7,7 @@ import Avatar from '@/components/user/Avatar'
 import clsx from 'clsx'
 import { HiExclamationCircle } from 'react-icons/hi'
 import { trpc } from '@/common/trpc'
+import { TRPCClientError } from '@trpc/client'
 
 const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = ({
   session,
@@ -29,11 +30,11 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
       }}
       onSubmit={async (values, { setSubmitting }) => {
         try {
-          const result = await useUserUpdate.mutateAsync({ userId: session.id, ...values })
+          const result = await useUserUpdate.mutateAsync({ ...values })
 
           toast.info(result?.message)
         } catch (error) {
-          if (error instanceof Error) {
+          if (error instanceof TRPCClientError) {
             setSubmitting(false)
             return toast.error(error.message)
           }

@@ -8,6 +8,7 @@ import { useState } from 'react'
 import { HiExclamationCircle, HiPlus } from 'react-icons/hi'
 import { toast } from 'react-toastify'
 import Map from '@/components/user/employements/Map'
+import { TRPCClientError } from '@trpc/client'
 
 const EmploymentForm: React.FC<{
   session: User
@@ -42,7 +43,6 @@ const EmploymentForm: React.FC<{
           onSubmit={async (values, { setSubmitting }) => {
             try {
               const result = await useCreateEmployements.mutateAsync({
-                userId: session.id,
                 company: values.employeeCompany,
                 position: values.employeePosition,
                 employedOn: values.employedOn.toISOString(),
@@ -50,7 +50,7 @@ const EmploymentForm: React.FC<{
 
               toast.info(result?.message)
             } catch (error) {
-              if (error instanceof Error) {
+              if (error instanceof TRPCClientError) {
                 setSubmitting(false)
                 return toast.error(error.message)
               }
