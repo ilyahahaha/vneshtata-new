@@ -1,13 +1,14 @@
 import type { User } from '@/common/session'
 import { Formik } from 'formik'
 import type { FormikErrors } from 'formik'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { toast } from 'react-toastify'
 import Avatar from '@/components/user/Avatar'
 import clsx from 'clsx'
 import { HiExclamationCircle } from 'react-icons/hi'
 import { trpc } from '@/common/trpc'
 import { TRPCClientError } from '@trpc/client'
+import { useFilePicker } from 'use-file-picker'
 
 const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = ({
   session,
@@ -16,7 +17,47 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
   const [acccountError, setAccountError] = useState<boolean>()
 
   const useUserUpdate = trpc.user.updateUser.useMutation()
+  const useImageUpload = trpc.user.updateImage.useMutation()
+  const useImageDelete = trpc.user.deleteImage.useMutation()
   const userQueriesUtils = trpc.useContext()
+
+  const [imageLoading, setImageLoading] = useState<{ loading: boolean; deleting: boolean }>({
+    loading: false,
+    deleting: false,
+  })
+
+  const [openFileSelector, { filesContent, clear }] = useFilePicker({
+    accept: ['.png', '.jpg', '.jpeg'],
+    readAs: 'DataURL',
+    multiple: false,
+  })
+
+  useEffect(() => {
+    async function startImageUpload() {
+      if (filesContent.length === 1) {
+        setImageLoading({ loading: true, deleting: false })
+
+        try {
+          const result = await useImageUpload.mutateAsync({ image: filesContent[0] })
+
+          toast.info(result?.message)
+        } catch (error) {
+          if (error instanceof TRPCClientError) {
+            clear()
+            setImageLoading({ loading: false, deleting: false })
+
+            return toast.error(error.message)
+          }
+        }
+
+        userQueriesUtils.user.session.invalidate()
+        setImageLoading({ loading: false, deleting: false })
+        clear()
+      }
+    }
+
+    startImageUpload()
+  }, [filesContent, clear, session.id, userQueriesUtils.user.session, useImageUpload])
 
   return (
     <Formik
@@ -92,7 +133,7 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
 
               {/* Фото и ID */}
               <div className="grid grid-cols-3 gap-6">
-                {/* <div className="col-span-3">
+                <div className="col-span-3">
                   <label className="block text-sm font-medium text-gray-700">Аватар</label>
                   <div className="mt-1 flex items-center">
                     <Avatar picture={session.picture} size={12} />
@@ -103,7 +144,7 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
                         openFileSelector()
                       }}
                       className={clsx(
-                        imageLoading ? 'loading' : '',
+                        imageLoading.loading ? 'loading' : '',
                         'btn btn-sm btn-outlined ml-5 py-2 px-3'
                       )}
                     >
@@ -113,29 +154,23 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
                       <button
                         type="button"
                         onClick={async () => {
-                          setImageDeleting(true)
+                          setImageLoading({ loading: false, deleting: true })
 
                           try {
-                            const result = await mutate(
-                              'deleteImage',
-                              defaultPostCallback('/api/user/deleteImage', {
-                                id: session.id,
-                              }),
-                              false
-                            )
+                            const result = await useImageDelete.mutateAsync()
 
                             toast.info(result?.message)
                           } catch (error) {
-                            if (error instanceof Error) {
+                            if (error instanceof TRPCClientError) {
                               return toast.error(error.message)
                             }
                           }
 
-                          setImageDeleting(false)
-                          router.refresh()
+                          setImageLoading({ loading: false, deleting: false })
+                          userQueriesUtils.user.session.invalidate()
                         }}
                         className={clsx(
-                          imageDeleting ? 'loading' : '',
+                          imageLoading.deleting ? 'loading' : '',
                           'btn btn-sm btn-outlined ml-2'
                         )}
                       >
@@ -143,7 +178,7 @@ const UserForm: React.FC<{ session: User; busiedUserIds: { id: string }[] }> = (
                       </button>
                     ) : null}
                   </div>
-                </div> */}
+                </div>
                 <div className="col-span-6 sm:col-span-3">
                   <label htmlFor="newUserId" className="block text-sm font-medium text-gray-700">
                     ID пользователя

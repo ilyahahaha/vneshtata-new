@@ -1,7 +1,11 @@
 import type { User } from '@/common/session'
+import { trpc } from '@/common/trpc'
 import Avatar from '@/components/user/Avatar'
+import { TRPCClientError } from '@trpc/client'
+import clsx from 'clsx'
 import Link from 'next/link'
-import { Fragment } from 'react'
+import { Fragment, useState } from 'react'
+import { toast } from 'react-toastify'
 
 const Info: React.FC<{
   user: {
@@ -19,7 +23,14 @@ const Info: React.FC<{
     }
   }
   session: User
-}> = ({ user, session }) => {
+  isFollowed: boolean
+}> = ({ user, session, isFollowed }) => {
+  const [isUserFollowed, setUserFollowed] = useState<boolean>(isFollowed)
+  const [isFollowingProccess, setFollowingProccess] = useState<boolean>(false)
+
+  const useUserFollow = trpc.user.follow.useMutation()
+  const userQueriesUtils = trpc.useContext()
+
   return (
     <div className="max-w-3xl mx-auto md:flex md:items-center md:justify-between md:space-x-5 lg:max-w-7xl">
       <div className="flex flex-row items-center space-x-5 shri">
@@ -40,45 +51,39 @@ const Info: React.FC<{
             Редактировать
           </Link>
         ) : (
-          <></>
-          // <Fragment>
-          //   <Link href={`/chat/${user.id}`} className="btn btn-ghost btn-sm">
-          //     Сообщение
-          //   </Link>
+          <Fragment>
+            <Link href={`/chat/${user.id}`} className="btn btn-ghost btn-sm">
+              Сообщение
+            </Link>
 
-          //   <button
-          //     type="button"
-          //     onClick={async () => {
-          //       try {
-          //         setFollowingProccess(true)
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  setFollowingProccess(true)
 
-          //         const result = await mutate(
-          //           'follow',
-          //           defaultPostCallback('/api/user/follow', {
-          //             followingUserId: user.id,
-          //             followerUserId: session.id,
-          //             unfollow: isUserFollowed,
-          //           }),
-          //           false
-          //         )
-          //         toast.info(result?.message)
-          //         setUserFollowed(!isUserFollowed)
+                  const result = await useUserFollow.mutateAsync({
+                    postId: user.id,
+                    dislike: isUserFollowed,
+                  })
 
-          //         router.refresh()
-          //       } catch (error) {
-          //         if (error instanceof Error) {
-          //           toast.error(error.message)
-          //         }
-          //       }
+                  toast.info(result?.message)
+                  setUserFollowed(!isUserFollowed)
+                } catch (error) {
+                  if (error instanceof TRPCClientError) {
+                    toast.error(error.message)
+                  }
+                }
 
-          //       setFollowingProccess(false)
-          //     }}
-          //     className={clsx(!isUserFollowed ? 'btn-primary' : 'btn-ghost', 'btn btn-sm')}
-          //     disabled={isFollowingProccess}
-          //   >
-          //     {!isUserFollowed ? 'Подписаться' : 'Отписаться'}
-          //   </button>
-          // </Fragment>
+                userQueriesUtils.user.getUser.invalidate({ userId: user.id })
+                setFollowingProccess(false)
+              }}
+              className={clsx(!isUserFollowed ? 'btn-primary' : 'btn-ghost', 'btn btn-sm')}
+              disabled={isFollowingProccess}
+            >
+              {!isUserFollowed ? 'Подписаться' : 'Отписаться'}
+            </button>
+          </Fragment>
         )}
       </div>
     </div>

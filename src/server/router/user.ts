@@ -1,8 +1,9 @@
 import * as argon2 from 'argon2'
 import prisma from '@/common/prisma'
 import {
-  createEmployement,
-  deleteEmployement,
+  createEmployementSchema,
+  deleteEmployementSchema,
+  fileUploadSchema,
   loginSchema,
   registerSchema,
   updateProfileSchema,
@@ -13,7 +14,10 @@ import { EmptySession, User } from '@/common/session'
 import { protectedProcedure, publicProcedure, router } from '@/server/trpc'
 import { TRPCError } from '@trpc/server'
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library'
+import { v4 } from 'uuid'
 import { Companies } from '@prisma/client'
+import { supabase } from '@/common/supabase'
+import { likePostSchema } from '@/common/schemas/post'
 
 export const userRouter = router({
   session: publicProcedure.query(async ({ ctx }) => {
@@ -110,7 +114,9 @@ export const userRouter = router({
       result: { EmptySession },
     }
   }),
-  getUser: protectedProcedure.input(userIdSchema).query(async ({ input }) => {
+  getUser: protectedProcedure.input(userIdSchema).query(async ({ input, ctx }) => {
+    const id = ctx.session.user?.id as string
+
     const { userId } = input
 
     const user = await prisma.user.findUnique({
@@ -155,16 +161,60 @@ export const userRouter = router({
       throw new TRPCError({ code: 'NOT_FOUND', message: 'Пользователь с указаным ID не найден' })
     }
 
-    return { status: 200, message: 'Данные о пользователе получены', result: { user } }
+    const follow = await prisma.follows.findUnique({
+      where: { followerId_followingId: { followerId: id, followingId: userId } },
+    })
+
+    const isFollowing = follow ? true : false
+
+    return { status: 200, message: 'Данные о пользователе получены', result: { user, isFollowing } }
   }),
   getBusiedIds: protectedProcedure.query(async () => {
     const ids = await prisma.user.findMany({ select: { id: true } })
 
     if (!ids) {
-      throw new TRPCError({ code: 'NOT_FOUND', message: 'Пользователи не найдены' })
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Пользователи не найдены',
+      })
     }
 
     return { status: 200, message: 'Данные о пользователях получены', result: { ids } }
+  }),
+  follow: protectedProcedure.input(likePostSchema).mutation(async ({ ctx, input }) => {
+    const userId = ctx.session.user?.id as string
+
+    const { postId: followingUserId, dislike: unfollow } = input
+
+    let follow
+
+    if (!unfollow) {
+      follow = await prisma.follows.create({
+        data: {
+          followerId: userId,
+          followingId: followingUserId,
+        },
+      })
+    } else {
+      follow = await prisma.follows.delete({
+        where: {
+          followerId_followingId: { followerId: userId, followingId: followingUserId },
+        },
+      })
+    }
+
+    if (!follow) {
+      throw new TRPCError({
+        code: 'NOT_FOUND',
+        message: 'Пользователь не найден',
+      })
+    }
+
+    return {
+      status: 200,
+      message: !unfollow ? 'Подписка оформлена' : 'Подписка отменена',
+      result: { follow },
+    }
   }),
   updateUser: protectedProcedure.input(updateUserSchema).mutation(async ({ ctx, input }) => {
     const userId = ctx.session.user?.id as string
@@ -262,7 +312,7 @@ export const userRouter = router({
     return { status: 201, message: 'Профиль обновлен', result: { profile } }
   }),
   createEmployement: protectedProcedure
-    .input(createEmployement)
+    .input(createEmployementSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user?.id as string
 
@@ -299,7 +349,7 @@ export const userRouter = router({
       return { status: 201, message: 'Опыт работы обновлен', result: { employement } }
     }),
   deleteEmployement: protectedProcedure
-    .input(deleteEmployement)
+    .input(deleteEmployementSchema)
     .mutation(async ({ ctx, input }) => {
       const userId = ctx.session.user?.id as string
 
@@ -326,4 +376,53 @@ export const userRouter = router({
 
       return { status: 201, message: 'Должность удалена', result: {} }
     }),
+  updateImage: protectedProcedure.input(fileUploadSchema).mutation(async ({ ctx, input }) => {
+    const userSession = ctx.session.user as User
+
+    const { image } = input
+    const filename = `${v4()}-${image.name}`
+
+    const { data, error } = await supabase.storage.from('avatar').upload(filename, image, {
+      cacheControl: '3600',
+      upsert: false,
+    })
+
+    if (!data || error) {
+      throw new TRPCError({
+        code: 'INTERNAL_SERVER_ERROR',
+        message: 'Ошибка при загрузке аватарки',
+      })
+    }
+
+    prisma.user.update({
+      where: {
+        id: userSession.id,
+      },
+      data: {
+        picture: filename,
+      },
+    })
+
+    userSession.picture = filename
+    await ctx.session.save()
+
+    return { status: 201, message: 'Аватарка загружена', result: {} }
+  }),
+  deleteImage: protectedProcedure.mutation(async ({ ctx }) => {
+    const userSession = ctx.session.user as User
+
+    prisma.user.update({
+      where: {
+        id: userSession.id,
+      },
+      data: {
+        picture: null,
+      },
+    })
+
+    userSession.picture = null
+    await ctx.session.save()
+
+    return { status: 201, message: 'Аватарка удалена', result: {} }
+  }),
 })

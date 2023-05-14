@@ -28,10 +28,11 @@ const UserProfile: NextPage = () => {
   }
 
   const user = userData.result.user
+  const isFollowed = userData.result.isFollowing
 
   return (
     <>
-      <Info user={user} session={session as User} />
+      <Info user={user} session={session as User} isFollowed={isFollowed} />
 
       <div className="mt-8 max-w-3xl mx-auto grid grid-cols-1 gap-6 lg:max-w-7xl lg:grid-flow-col-dense lg:grid-cols-3">
         <div className="space-y-6 lg:col-start-1 lg:col-span-2">

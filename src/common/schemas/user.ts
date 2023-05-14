@@ -35,14 +35,18 @@ export const updateProfileSchema = z.object({
   about: z.string().trim().optional(),
 })
 
-export const createEmployement = z.object({
+export const createEmployementSchema = z.object({
   company: z.string().nonempty({ message: 'Введите компанию' }).trim(),
   position: z.string().nonempty({ message: 'Введите должность' }).trim(),
   employedOn: z.string().nonempty({ message: 'Введите дату' }).trim(),
 })
 
-export const deleteEmployement = z.object({
+export const deleteEmployementSchema = z.object({
   employementId: z.string().nonempty({ message: 'Введите ID' }).trim(),
+})
+
+export const fileUploadSchema = z.object({
+  image: z.instanceof(Blob),
 })
 
 export type ILogin = z.infer<typeof loginSchema>
@@ -50,3 +54,6 @@ export type IRegister = z.infer<typeof registerSchema>
 export type IUserId = z.infer<typeof userIdSchema>
 export type IUpdateUser = z.infer<typeof updateUserSchema>
 export type IUpdateProfile = z.infer<typeof updateProfileSchema>
+export type ICreateEmployement = z.infer<typeof createEmployementSchema>
+export type IDeleteEmployement = z.infer<typeof deleteEmployementSchema>
+export type IFileUpload = z.infer<typeof fileUploadSchema>
