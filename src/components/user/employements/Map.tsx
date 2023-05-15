@@ -4,6 +4,9 @@ import { Fragment } from 'react'
 import { FaVk, FaYandex } from 'react-icons/fa'
 import { format } from 'date-fns'
 import { ru } from 'date-fns/locale'
+import { HiX } from 'react-icons/hi'
+import { trpc } from '@/common/trpc'
+import { toast } from 'react-toastify'
 
 const convertCompany = (company: Companies) => {
   switch (company) {
@@ -123,12 +126,18 @@ const convertIcon = (company: Companies) => {
 }
 
 const Map: React.FC<{
+  userId: string
   employements: {
+    id: string
     position: string
     company: Companies
     employedOn: string
   }[]
-}> = ({ employements }) => {
+  removeButton: boolean
+}> = ({ userId, employements, removeButton }) => {
+  const useDeleteEmployement = trpc.user.deleteEmployement.useMutation()
+  const userQueriesUtils = trpc.useContext()
+
   return (
     <Fragment>
       {employements.length !== 0 ? (
@@ -158,8 +167,26 @@ const Map: React.FC<{
                       <div className="text-right text-sm whitespace-nowrap text-gray-500">
                         <div className="flex space-x-2">
                           <time dateTime={employement.employedOn}>
-                            {format(new Date(employement.employedOn), 'MMM yyyy', { locale: ru })}
+                            {format(new Date(employement.employedOn), 'dd MMM yyyy', {
+                              locale: ru,
+                            })}
                           </time>
+                          {removeButton ? (
+                            <button
+                              onClick={async () => {
+                                await useDeleteEmployement.mutateAsync({
+                                  employementId: employement.id,
+                                })
+
+                                toast.info('Опыт работы обновлен')
+
+                                userQueriesUtils.user.getUser.invalidate({ userId: userId })
+                              }}
+                              className="text-gray-900 hover:text-primary"
+                            >
+                              <HiX className="w-4 h-4" />
+                            </button>
+                          ) : null}
                         </div>
                       </div>
                     </div>

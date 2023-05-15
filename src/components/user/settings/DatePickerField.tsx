@@ -18,7 +18,7 @@ const DatePickerField: React.FC = ({ ...props }) => {
       {...props}
       locale="ru"
       popperPlacement="left"
-      dateFormat="MMMM yyyy"
+      dateFormat="dd MMMM yyyy"
       selected={(field.value && new Date(field.value)) || new Date()}
       onChange={(val: any) => {
         setFieldValue(field.name, val)

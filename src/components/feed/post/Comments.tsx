@@ -8,6 +8,7 @@ import { Formik, FormikErrors } from 'formik'
 import { toast } from 'react-toastify'
 import Avatar from '@/components/user/Avatar'
 import { trpc } from '@/common/trpc'
+import { formatDistanceDay } from '@/common/utils/time'
 
 const Comments: React.FC<{
   userId: string
@@ -22,7 +23,7 @@ const Comments: React.FC<{
     content: string
     createdAt: string
   }[]
-}> = ({ userId, postId, comments }) => {
+}> = ({ postId, comments }) => {
   const [error, setError] = useState<boolean>()
 
   const commentMutation = trpc.post.comment.useMutation()
@@ -32,45 +33,47 @@ const Comments: React.FC<{
     <div className="border-t border-gray-200">
       <div className="flow-root pt-4">
         <ul role="list" className="-mb-8">
-          {comments.map((comment, commentIdx) => (
-            <li key={commentIdx}>
-              <div className="relative pb-8">
-                {commentIdx !== comments.length - 1 ? (
-                  <span
-                    className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
-                    aria-hidden="true"
-                  />
-                ) : null}
-                <div className="relative flex items-start space-x-3">
-                  <div className="relative">
-                    <Avatar picture={comment.author.picture} size={10} />
+          {comments.map((comment, commentIdx) => {
+            return (
+              <li key={commentIdx}>
+                <div className="relative pb-8">
+                  {commentIdx !== comments.length - 1 ? (
+                    <span
+                      className="absolute top-5 left-5 -ml-px h-full w-0.5 bg-gray-200"
+                      aria-hidden="true"
+                    />
+                  ) : null}
+                  <div className="relative flex items-start space-x-3">
+                    <div className="relative">
+                      <Avatar picture={comment.author.picture} size={10} />
 
-                    <span className="absolute -bottom-0.5 -right-1 bg-white rounded-tl px-0.5 py-px">
-                      <HiChatAlt className="h-5 w-5 text-gray-400" aria-hidden="true" />
-                    </span>
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div>
-                      <div className="text-sm">
-                        <a
-                          href={`/user/${comment.author.id}`}
-                          className="font-medium text-gray-900"
-                        >
-                          {comment.author.firstName} {comment.author.lastName}
-                        </a>
-                      </div>
-                      <p className="mt-0.5 text-sm text-gray-500">
-                        {/* {formatDistanceDay(comment.createdAt)} */}
-                      </p>
+                      <span className="absolute -bottom-0.5 -right-1 bg-white rounded-tl px-0.5 py-px">
+                        <HiChatAlt className="h-5 w-5 text-gray-400" aria-hidden="true" />
+                      </span>
                     </div>
-                    <div className="mt-2 text-sm text-gray-700">
-                      <p>{comment.content}</p>
+                    <div className="min-w-0 flex-1">
+                      <div>
+                        <div className="text-sm">
+                          <a
+                            href={`/user/${comment.author.id}`}
+                            className="font-medium text-gray-900"
+                          >
+                            {comment.author.firstName} {comment.author.lastName}
+                          </a>
+                        </div>
+                        <p className="mt-0.5 text-sm text-gray-500">
+                          {formatDistanceDay(new Date(comment.createdAt))}
+                        </p>
+                      </div>
+                      <div className="mt-2 text-sm text-gray-700">
+                        <p>{comment.content}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
       </div>
       <Formik

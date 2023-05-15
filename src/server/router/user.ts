@@ -138,6 +138,7 @@ export const userRouter = router({
         },
         previousEmployments: {
           select: {
+            id: true,
             company: true,
             position: true,
             employedOn: true,

@@ -43,7 +43,7 @@ const UserProfile: NextPage = () => {
         <div>
           <Followers followers={user.followedBy} />
 
-          <List employements={user.previousEmployments} />
+          <List userId={user.id} employements={user.previousEmployments} />
         </div>
       </div>
     </>

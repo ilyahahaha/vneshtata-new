@@ -2,12 +2,14 @@ import Map from '@/components/user/employements/Map'
 import type { Companies } from '@prisma/client'
 
 const List: React.FC<{
+  userId: string
   employements: {
+    id: string
     position: string
     company: Companies
     employedOn: string
   }[]
-}> = ({ employements }) => {
+}> = ({ userId, employements }) => {
   return (
     <section aria-labelledby="timeline-title" className="lg:col-start-3 lg:col-span-1">
       <div className="bg-white border rounded-md border-gray-200">
@@ -18,7 +20,7 @@ const List: React.FC<{
         </div>
 
         <div className="border-t px-4 pb-6 sm:px-6">
-          <Map employements={employements} />
+          <Map userId={userId} employements={employements} removeButton={false} />
         </div>
       </div>
     </section>

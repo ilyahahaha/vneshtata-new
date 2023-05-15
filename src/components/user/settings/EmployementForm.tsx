@@ -14,6 +14,7 @@ import DatePickerField from './DatePickerField'
 const EmploymentForm: React.FC<{
   session: User
   employements: {
+    id: string
     position: string
     company: Companies
     employedOn: string
@@ -89,7 +90,7 @@ const EmploymentForm: React.FC<{
                     htmlFor="employeeCompany"
                     className="block text-sm font-medium text-gray-700"
                   >
-                    Место работы
+                    Компания
                   </label>
                   <select
                     id="employeeCompany"
@@ -185,7 +186,7 @@ const EmploymentForm: React.FC<{
         </Formik>
 
         <div className="relative">
-          <Map employements={employements} />
+          <Map userId={session.id} employements={employements} removeButton={true} />
         </div>
       </div>
     </div>

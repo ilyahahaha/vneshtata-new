@@ -4,6 +4,7 @@ import Actions from '@/components/feed/post/Actions'
 import Comments from '@/components/feed/post/Comments'
 import { PostType } from '../InfiniteFeed'
 import { trpc } from '@/common/trpc'
+import { formatDistanceDay } from '@/common/utils/time'
 
 const PostComponent: React.FC<{
   userId: string
@@ -32,7 +33,7 @@ const PostComponent: React.FC<{
                   {post.author.firstName} {post.author.lastName}
                 </h3>
               </Link>
-              {/* <p className="text-sm text-gray-500">{formatDistanceDay(post.createdAt)}</p> */}
+              <p className="text-sm text-gray-500">{formatDistanceDay(new Date(post.createdAt))}</p>
             </div>
           </div>
         </div>
