@@ -13,6 +13,7 @@ import { TRPCError } from '@trpc/server'
 const navigation = [
   { name: 'Лента', href: '/feed' },
   { name: 'Сообщения', href: '/chat' },
+  { name: 'Биржа', href: 'https://rutube.ru/video/79fc73b8215c2371a64c71ab60b27b37/' },
 ]
 
 const userNavigation = [
